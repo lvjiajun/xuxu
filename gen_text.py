@@ -1,12 +1,15 @@
 import json
 from xml.dom.minidom import parse  # 调用parse模块
+import os
+from tqdm import tqdm
 
-dirs_name = 'pan12-text-alignment-training-corpus-2012-03-16'
-
+dir_name = 'pan12-text-alignment-training-corpus-2012-03-16'
+test_name = 'pan12-detailed-comparison-test-corpus-2012-08-12'
 D_data = list()
 
 
-def filewrite(filepath, rec):
+def filewrite(filepath, dirs_name):
+    rec = 0
     dom = parse('./data/' + dirs_name + '/03_artificial_low/' + filepath)  # 使用parser读取xml中
     ref = dom.getElementsByTagName('document')
     suspcious_reference = ref[0].getAttribute('reference')
@@ -41,12 +44,17 @@ def filewrite(filepath, rec):
 
 
 if __name__ == '__main__':
-    tol = 0
-    rec = 0
-    with open('./data/name.txt', 'r', encoding='utf-8') as f:
-        for line in f.readlines():
-            line = line.strip('\n')
-            rec = filewrite(line, rec)
-        f = open('./data/' + dirs_name + '.json', 'w', encoding='utf-8')
-        json.dump(D_data, f, indent=2)
-        f.close()
+    dir_list = os.listdir(f'./data/{dir_name}/03_artificial_low')
+    for line in tqdm(dir_list[1:]):
+        rec = filewrite(line, dir_name)
+    f = open('./data/' + dir_name + '.json', 'w', encoding='utf-8')
+    json.dump(D_data, f, indent=2)
+    f.close()
+
+    D_data.clear()
+    dir_list = os.listdir(f'./data/{test_name}/03_artificial_low')
+    for line in tqdm(dir_list[1:]):
+        rec = filewrite(line, test_name)
+    f = open('./data/' + test_name + '.json', 'w', encoding='utf-8')
+    json.dump(D_data, f, indent=2)
+    f.close()
