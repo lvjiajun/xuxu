@@ -1,6 +1,13 @@
+# -*- coding: utf-8 -*-
+# @Time : 2022/12/16 10:45
+# @Author : cloudjumper
+# @Email : lvjiajun@outlook.com
+# @File : greedy_matching.py
+# @Project : xuxu
+# @Describe : All you think is star River,all star river is you
 import json
 import re
-
+import time
 from rouge import Rouge
 from nltk.tokenize import sent_tokenize
 from nltk.tokenize import word_tokenize
@@ -12,11 +19,18 @@ rouge = Rouge()
 from stanfordcorenlp import StanfordCoreNLP
 from tqdm import tqdm
 
-dirs_name = 'pan12-text-alignment-training-corpus-2012-03-16'
+dirs_name: str = 'pan12-text-alignment-training-corpus-2012-03-16'
+# 数据集类型
+type_name: str = '05_translation'
 
 
 def text_segmentate(text, maxlen, seps='\n', strips=None):
     """将文本按照标点符号划分为若干个短句
+    :param text:
+    :param maxlen:
+    :param seps:
+    :param strips:
+    :return:
     """
     text = text.strip().strip(strips)
     if seps and len(text) > maxlen:
@@ -61,7 +75,13 @@ def wash_data(text: str, pun_data=None):
 
 
 def text_segmentate(text, maxlen, seps='\n', strips=None):
-    """将文本按照标点符号划分为若干个短句
+    """
+    将文本按照标点符号划分为若干个短句
+    :param text:
+    :param maxlen:
+    :param seps:
+    :param strips:
+    :return:
     """
     text = text.strip().strip(strips)
     if seps and len(text) > maxlen:
@@ -132,10 +152,16 @@ def cal_rouge(evaluated_ngrams, reference_ngrams):
     return {"f": f1_score, "p": precision, "r": recall}
 
 
-# doc_list 输入的是文章内容
-# abstract_sent_list输入的是摘要内容1
-# 文章内容的长度大于摘要内容
-def rouge_matching(doc_sent_list, abstract_sent_list, greedy=False):
+def rouge_matching(doc_sent_list: list, abstract_sent_list: list, greedy: bool = False) -> list:
+    """
+    doc_list 输入的是文章内容
+    abstract_sent_list输入的是摘要内容1
+    文章内容的长度大于摘要内容
+    :param doc_sent_list:
+    :param abstract_sent_list:
+    :param greedy:
+    :return:
+    """
     if len(abstract_sent_list) > len(doc_sent_list):
         return None
 
@@ -212,14 +238,21 @@ def _word_tokenize(text_data: list):
 
 def _fix_data(text: list):
     re_list = []
-    for data in tqdm(text):
-        data['src'] = wash_data(data['src'].replace('\n', ' '))
-        data['tgt'] = wash_data(data['tgt'].replace('\n', ' '))
-        re_list.append(data)
+    for data_list in tqdm(text):
+        for data in data_list:
+            data['src'] = wash_data(data['src'].replace('\n', ' '))
+            data['tgt'] = wash_data(data['tgt'].replace('\n', ' '))
+            re_list.append(data)
     return re_list
 
 
-def _fix_sent(text: list, min_len=2):
+def _fix_sent(text: list, min_len: int = 2) -> list:
+    """
+    合并部分碎片句子
+    :param text:输入片段的list
+    :param min_len:最小句子长度
+    :return:
+    """
     temp_sent = []
     sp_symbol = []
     re_sent = []
@@ -289,7 +322,13 @@ def _match_data(text: list, worker=4):
     return re_list
 
 
-def _merge_sent(text: list, min_len=16):
+def _merge_sent(text: list, min_len: int = 16) -> list:
+    """
+    合并长度不够的句子，采用向下合并的方法
+    :param text:
+    :param min_len:
+    :return:
+    """
     re_list = []
     temp_list = []
     for data in text:
@@ -303,7 +342,33 @@ def _merge_sent(text: list, min_len=16):
     return re_list
 
 
-def pick_pearl(text: list, min_score=0.5, max_socre=1.8, part_score=0.36):
+def _merge_sent_by_word(text: list, token_len=128):
+    for fragment in text:
+        src_temp = ''
+        src_temp_len = 0
+        src_list = list()
+        for src in fragment['src']:
+            src_token = word_tokenize(src)
+            if src_temp_len < token_len:
+                src_temp = src_temp + src
+                src_temp_len = src_temp_len + len(src_token)
+            else:
+                src_list.append(src_temp)
+                src_temp = ''
+                src_temp_len = 0
+        src_list.append(src_temp)
+
+
+def pick_pearl(text: list, min_score: float = 0.5, max_socre: float = 1.8, part_score: float = 0.36):
+    """
+    挑选珍珠行动，通过rouge得分
+    高低继续筛选掉一些匹配错误的句子
+    :param text:
+    :param min_score:
+    :param max_socre:
+    :param part_score:
+    :return: 返回pearl句子对
+    """
     sent_re = []
     lost_re = []
     for data in tqdm(text):
@@ -333,6 +398,24 @@ def pick_pearl(text: list, min_score=0.5, max_socre=1.8, part_score=0.36):
     return sent_re, lost_re
 
 
+def rainbow():
+    y = 2.5
+    while y >= -1.6:
+        x = -3.0
+        while x <= 4.0:
+            if (x * x + y * y - 1) ** 3 <= 3.6 * x * x * y * y * y or (
+                    -2.4 < x < -2.1 and 1.5 > y > -1) or (
+                    ((2.5 > x > 2.2) or (3.4 < x < 3.7)) and -1 < y < 1.5) or (
+                    -1 < y < -0.6 and 3.7 > x > 2.2):
+                print('*', end="")
+            else:
+                print(' ', end="")
+            x += 0.1
+        print()
+        time.sleep(0.25)
+        y -= 0.2
+
+
 def split_data(text: list):
     re_list = []
     for data in tqdm(text):
@@ -341,45 +424,49 @@ def split_data(text: list):
 
 
 if __name__ == '__main__':
-    # _file = open(f'./data/{dirs_name}.json', 'r', encoding='utf-8')
-    # _data = json.load(_file)
-    # _file.close()
-    #
-    # _file = open(f'./data/{dirs_name}_sent.json', 'w', encoding='utf-8')
-    # _data = _fix_data(_data)
-    # sent_data = _sent_tokenize(_data)
-    # json.dump(sent_data, _file, indent=2)
-    # _file.close()
-    #
-    # _file = open(f'./data/{dirs_name}_word.json', 'w', encoding='utf-8')
-    # word_data = _word_tokenize(sent_data)
-    # json.dump(word_data, _file, indent=2)
-    # _file.close()
-    #
-    # word_data = json.load(open(f'./data/{dirs_name}_word.json'))
-    #
-    # _file = open(f'./data/{dirs_name}_match.json', 'w', encoding='utf-8')
-    # match_data = _match_data(word_data)
-    # json.dump(match_data, _file, indent=2)
-    # _file.close()
+    '''rainbow       pop data'''
+    # rainbow()
+    json_name = f'{dirs_name}_{type_name}'
 
-    match_data = json.load(open(f'./data/{dirs_name}_match.json'))
+    _file = open(f'./data/{json_name}.json', 'r', encoding='utf-8')
+    _data = json.load(_file)
+    _file.close()
+
+    _file = open(f'./data/{json_name}_sent.json', 'w', encoding='utf-8')
+    _data = _fix_data(_data)
+    sent_data = _sent_tokenize(_data)
+    json.dump(sent_data, _file, indent=2)
+    _file.close()
+
+    _file = open(f'./data/{json_name}_word.json', 'w', encoding='utf-8')
+    word_data = _word_tokenize(sent_data)
+    json.dump(word_data, _file, indent=2)
+    _file.close()
+
+    word_data = json.load(open(f'./data/{json_name}_word.json'))
+
+    _file = open(f'./data/{json_name}_match.json', 'w', encoding='utf-8')
+    match_data = _match_data(word_data)
+    json.dump(match_data, _file, indent=2)
+    _file.close()
+
+    match_data = json.load(open(f'./data/{json_name}_match.json'))
     sent, lose = pick_pearl(match_data)
-    _file = open(f'./data/{dirs_name}_match_pass.json', 'w', encoding='utf-8')
+    _file = open(f'./data/{json_name}_match_pass.json', 'w', encoding='utf-8')
     json.dump(sent, _file, indent=2)
     _file.close()
 
-    _file = open(f'./data/{dirs_name}_match_loss.json', 'w', encoding='utf-8')
+    _file = open(f'./data/{json_name}_match_loss.json', 'w', encoding='utf-8')
     json.dump(lose, _file, indent=2)
     _file.close()
 
-    sent = json.load(open(f'./data/{dirs_name}_match_pass.json'))
+    sent = json.load(open(f'./data/{json_name}_match_pass.json'))
     train, vaild = split_data(sent)
 
-    _file = open(f'./data/{dirs_name}_match_train.json', 'w', encoding='utf-8')
+    _file = open(f'./data/{json_name}_match_train.json', 'w', encoding='utf-8')
     json.dump(train, _file, indent=2)
     _file.close()
 
-    _file = open(f'./data/{dirs_name}_match_vaild.json', 'w', encoding='utf-8')
+    _file = open(f'./data/{json_name}_match_vaild.json', 'w', encoding='utf-8')
     json.dump(vaild, _file, indent=2)
     _file.close()
