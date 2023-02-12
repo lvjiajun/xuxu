@@ -69,20 +69,20 @@ def filewrite(filepath: str, dirs_name: str) -> list:
 if __name__ == '__main__':
     sunshine()
 
-    # dir_list = os.listdir(f'./data/{dir_name}/{type_name}')
-    # for line in tqdm(dir_list[1:]):
-    #     if line[-3:] == 'xml':
-    #         rec = filewrite(line, dir_name)
-    #         D_data.append(rec)
-    # f = open(f'./data/{dir_name}_{type_name}.json', 'w', encoding='utf-8')
-    # json.dump(D_data, f, indent=2)
-    # f.close()
-    #
-    # dir_list = os.listdir(f'./data/{test_name}/{type_name}')
-    # for line in tqdm(dir_list):
-    #     if line[-3:] == 'xml':
-    #         rec = filewrite(line, test_name)
-    #         L_data[line] = rec
-    # f = open(f'./data/{test_name}_{type_name}.json', 'w', encoding='utf-8')
-    # json.dump(L_data, f, indent=2)
-    # f.close()
+    dir_list = os.listdir(f'./data/{dir_name}/{type_name}')
+    for line in tqdm(dir_list[1:]):
+        if line[-3:] == 'xml':
+            rec = filewrite(line, dir_name)
+            D_data.append(rec)
+    f = open(f'./data/{dir_name}_{type_name}.json', 'w', encoding='utf-8')
+    json.dump(D_data, f, indent=2)
+    f.close()
+
+    dir_list = os.listdir(f'./data/{test_name}/{type_name}')
+    for line in tqdm(dir_list):
+        if line[-3:] == 'xml':
+            rec = filewrite(line, test_name)
+            L_data[line] = rec
+    f = open(f'./data/{test_name}_{type_name}.json', 'w', encoding='utf-8')
+    json.dump(L_data, f, indent=2)
+    f.close()
