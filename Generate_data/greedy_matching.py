@@ -437,7 +437,7 @@ if __name__ == '__main__':
     '''rainbow       pop data'''
     # rainbow()
     try:
-        _file = open(f'greedy_matching.json', 'r', encoding='utf-8')
+        _file = open(f'config.json', 'r', encoding='utf-8')
         _hyper_parameter = json.load(_file)
         _file.close()
         dirs_name = _hyper_parameter["dirs_name"]
@@ -451,6 +451,7 @@ if __name__ == '__main__':
                             "min_len": 16,
                             "token_len": 128,
                             "max_workers": 4}
+        print('NUll config.json')
 
     print(_hyper_parameter)
     print('\n\n\n')
@@ -503,6 +504,7 @@ if __name__ == '__main__':
     _file.close()
 
     print('\n\n\n')
+    #rainbow()
     json_name = f'{test_name}_{type_name}'
 
     _file = open(f'./{path}/{json_name}.json', 'r', encoding='utf-8')
