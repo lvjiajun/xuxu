@@ -1,8 +1,10 @@
 !.py
 !.txt
-*.json
+!.md
 *.zip
-/data/pan12-detailed-comparison-test-corpus-2012-08-12/*
-/data/pan12-text-alignment-training-corpus-2012-03-16/*
-/stanford-corenlp-4.5.1/*
-/unilm text/*
+/Generate_data/data/pan12-detailed-comparison-test-corpus-2012-08-12/*
+/Generate_data/data/pan12-text-alignment-training-corpus-2012-03-16/*
+/Generate_data/data/*.json
+/Generate_data/data/modify/*
+/Generate_data/stanford-corenlp-4.5.1/*
+/old_data/*

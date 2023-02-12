@@ -16,7 +16,7 @@ dir_name: str = 'pan12-text-alignment-training-corpus-2012-03-16'
 # 测试数据集
 test_name: str = 'pan12-detailed-comparison-test-corpus-2012-08-12'
 # 数据集类型
-type_name: str = '06_simulated_paraphrase'
+type_name: str = '04_artificial_high'
 D_data = list()
 L_data = dict()
 

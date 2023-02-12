@@ -13,15 +13,14 @@ from nltk.tokenize import sent_tokenize
 from nltk.tokenize import word_tokenize
 from concurrent.futures import ProcessPoolExecutor
 from sklearn.model_selection import train_test_split
+import detailed_comparison_test_corpus
 
 rouge = Rouge()
 
-from stanfordcorenlp import StanfordCoreNLP
+# from stanfordcorenlp import StanfordCoreNLP
 from tqdm import tqdm
 
-dirs_name: str = 'pan12-text-alignment-training-corpus-2012-03-16'
-# 数据集类型
-type_name: str = '05_translation'
+_hyper_parameter = dict()
 
 
 def text_segmentate(text, maxlen, seps='\n', strips=None):
@@ -152,7 +151,7 @@ def cal_rouge(evaluated_ngrams, reference_ngrams):
     return {"f": f1_score, "p": precision, "r": recall}
 
 
-def rouge_matching(doc_sent_list: list, abstract_sent_list: list, greedy: bool = False) -> list:
+def rouge_matching(doc_sent_list: list, abstract_sent_list: list, greedy: bool = 1) -> list:
     """
     doc_list 输入的是文章内容
     abstract_sent_list输入的是摘要内容1
@@ -213,15 +212,17 @@ def get_smart_common_words(path='./smart_common_words.txt'):
 def _sent_tokenize(text_data: list):
     re_list = []
     for data in tqdm(text_data):
-        data['src_s'] = _merge_sent(_fix_sent(sent_tokenize(data['src'])))
-        data['tgt_s'] = _merge_sent(_fix_sent(sent_tokenize(data['tgt'])))
+        data['src_s'] = _merge_sent(text=_fix_sent(sent_tokenize(data['src'])),
+                                    min_len=_hyper_parameter['min_len'])
+        data['tgt_s'] = _merge_sent(text=_fix_sent(sent_tokenize(data['tgt'])),
+                                    min_len=_hyper_parameter['min_len'])
         re_list.append(dict(data))
     return re_list
 
 
 def _word_tokenize(text_data: list):
     re_list = []
-    nlp = StanfordCoreNLP(r'./stanford-corenlp-4.5.1')
+    # nlp = StanfordCoreNLP(r'./stanford-corenlp-4.5.1')
     for data in tqdm(text_data):
         src_w = []
         tgt_w = []
@@ -232,7 +233,7 @@ def _word_tokenize(text_data: list):
         data['src_w'] = src_w
         data['tgt_w'] = tgt_w
         re_list.append(data)
-    nlp.close()
+    # nlp.close()
     return re_list
 
 
@@ -359,7 +360,10 @@ def _merge_sent_by_word(text: list, token_len=128):
         src_list.append(src_temp)
 
 
-def pick_pearl(text: list, min_score: float = 0.5, max_socre: float = 1.8, part_score: float = 0.36):
+def pick_pearl(text: list,
+               min_score: float = 0.4,
+               max_socre: float = 1.8,
+               part_score: float = 0.36):
     """
     挑选珍珠行动，通过rouge得分
     高低继续筛选掉一些匹配错误的句子
@@ -424,49 +428,89 @@ def split_data(text: list):
 
 
 if __name__ == '__main__':
+    path = 'data'
+    dirs_name: str = 'pan12-text-alignment-training-corpus-2012-03-16'
+    test_name: str = 'pan12-detailed-comparison-test-corpus-2012-08-12'
+    # 数据集类型
+    type_name: str = '05_translation'
+
     '''rainbow       pop data'''
     # rainbow()
+    try:
+        _file = open(f'greedy_matching.json', 'r', encoding='utf-8')
+        _hyper_parameter = json.load(_file)
+        _file.close()
+        dirs_name = _hyper_parameter["dirs_name"]
+        test_name = _hyper_parameter["test_name"]
+        type_name = _hyper_parameter["type"]
+    except Exception as e:
+        _hyper_parameter = {"min_rouge": 0.4,
+                            "max_rouge": 1.8,
+                            "part_score": 0.36,
+                            "greedy": 1,
+                            "min_len": 16,
+                            "token_len": 128,
+                            "max_workers": 4}
+
+    print(_hyper_parameter)
+    print('\n\n\n')
     json_name = f'{dirs_name}_{type_name}'
 
-    _file = open(f'./data/{json_name}.json', 'r', encoding='utf-8')
+    _file = open(f'./{path}/{json_name}.json', 'r', encoding='utf-8')
     _data = json.load(_file)
     _file.close()
 
-    _file = open(f'./data/{json_name}_sent.json', 'w', encoding='utf-8')
+    _file = open(f'./{path}/{json_name}_sent.json', 'w', encoding='utf-8')
     _data = _fix_data(_data)
     sent_data = _sent_tokenize(_data)
     json.dump(sent_data, _file, indent=2)
     _file.close()
 
-    _file = open(f'./data/{json_name}_word.json', 'w', encoding='utf-8')
+    _file = open(f'./{path}/{json_name}_word.json', 'w', encoding='utf-8')
     word_data = _word_tokenize(sent_data)
     json.dump(word_data, _file, indent=2)
     _file.close()
 
-    word_data = json.load(open(f'./data/{json_name}_word.json'))
+    word_data = json.load(open(f'./{path}/{json_name}_word.json'))
 
-    _file = open(f'./data/{json_name}_match.json', 'w', encoding='utf-8')
+    _file = open(f'./{path}/{json_name}_match.json', 'w', encoding='utf-8')
     match_data = _match_data(word_data)
     json.dump(match_data, _file, indent=2)
     _file.close()
 
-    match_data = json.load(open(f'./data/{json_name}_match.json'))
-    sent, lose = pick_pearl(match_data)
-    _file = open(f'./data/{json_name}_match_pass.json', 'w', encoding='utf-8')
+    match_data = json.load(open(f'./{path}/{json_name}_match.json'))
+    sent, lose = pick_pearl(text=match_data,
+                            min_score=_hyper_parameter['min_rouge'],
+                            max_socre=_hyper_parameter['max_rouge'],
+                            part_score=_hyper_parameter['part_score'])
+    _file = open(f'./{path}/{json_name}_match_pass.json', 'w', encoding='utf-8')
     json.dump(sent, _file, indent=2)
     _file.close()
 
-    _file = open(f'./data/{json_name}_match_loss.json', 'w', encoding='utf-8')
+    _file = open(f'./{path}/{json_name}_match_loss.json', 'w', encoding='utf-8')
     json.dump(lose, _file, indent=2)
     _file.close()
 
-    sent = json.load(open(f'./data/{json_name}_match_pass.json'))
+    sent = json.load(open(f'./{path}/{json_name}_match_pass.json'))
     train, vaild = split_data(sent)
 
-    _file = open(f'./data/{json_name}_match_train.json', 'w', encoding='utf-8')
+    _file = open(f'./{path}/{json_name}_match_train.json', 'w', encoding='utf-8')
     json.dump(train, _file, indent=2)
     _file.close()
 
-    _file = open(f'./data/{json_name}_match_vaild.json', 'w', encoding='utf-8')
+    _file = open(f'./{path}/{json_name}_match_vaild.json', 'w', encoding='utf-8')
     json.dump(vaild, _file, indent=2)
+    _file.close()
+
+    print('\n\n\n')
+    json_name = f'{test_name}_{type_name}'
+
+    _file = open(f'./{path}/{json_name}.json', 'r', encoding='utf-8')
+    _data = json.load(_file)
+    _file.close()
+
+    _file = open(f'./{path}/{json_name}_sent.json', 'w', encoding='utf-8')
+    _data = detailed_comparison_test_corpus._fix_data(_data)
+    sent_data = detailed_comparison_test_corpus._sent_tokenize(_data)
+    json.dump(sent_data, _file, indent=2)
     _file.close()

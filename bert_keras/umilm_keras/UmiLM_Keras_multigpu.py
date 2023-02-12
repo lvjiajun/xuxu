@@ -26,6 +26,7 @@ import json
 import datetime
 from rouge import Rouge  # pip install rouge
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
+from tqdm import tqdm
 
 # 数据集类型
 dirs_name: str = 'pan12-text-alignment-training-corpus-2012-03-16'
@@ -249,14 +250,32 @@ if __name__ == '__main__':
         padded_batch=True
     )  # 数据要转为tf.data.Dataset格式，names跟输入层的名字对应
 
-    model.fit(
-        dataset,
-        steps_per_epoch=steps_per_epoch,
-        validation_data=valid_generator.forfit(),
-        validation_steps=len(valid_generator),
-        epochs=epochs,
-        callbacks=[evaluator, tf_callbacks]
-    )
+    try:
+        log_file = open('mt_keras.json')
+        logfile = json.load(log_file, 'r', encoding='utf-8')
+        log_file.close()
+
+        if len(logfile) > 0:
+            log_data = logfile[len(logfile) - 1]
+            model.load_weights(log_data['file_name'])
+            print(f'load ')
+
+            model.fit(
+                train_generator.forfit(),
+                steps_per_epoch=len(train_generator),
+                validation_data=valid_generator.forfit(),
+                validation_steps=len(valid_generator),
+                epochs=epochs,
+                callbacks=[evaluator, tf_callbacks]
+            )
+
+    except Exception as e:
+        time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        model.save_weights(f'./save_model/train_exception_{time}_model.weights')  # 保存模型
+        print(f'excepyion = {e.args}')
+
+    finally:
+        print(f'end time = {datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}')
 
 else:
 

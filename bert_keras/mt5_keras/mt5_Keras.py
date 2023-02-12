@@ -30,9 +30,8 @@ tf.compat.v1.experimental.output_all_intermediates(True)
 dirs_name: str = 'pan12-text-alignment-training-corpus-2012-03-16'
 type_name: str = '05_translation'
 json_name: str = f'../Generate_data/data/{dirs_name}_{type_name}_match'
-log_file = open('mt_keras.json')
-logfile: list = json.load(log_file, 'r', encoding='utf-8')
-logfile.close()
+logfile: list = list()
+
 # 基本参数
 max_c_len = 256
 max_t_len = 32
@@ -242,14 +241,33 @@ if __name__ == '__main__':
 
     evaluator = Evaluator()
     tf_callbacks = tf.keras.callbacks.TensorBoard(log_dir='./logs')
-    model.fit(
-        train_generator.forfit(),
-        steps_per_epoch=len(train_generator),
-        validation_data=valid_generator.forfit(),
-        validation_steps=len(valid_generator),
-        epochs=epochs,
-        callbacks=[evaluator, tf_callbacks]
-    )
+
+    try:
+        log_file = open('mt_keras.json')
+        logfile = json.load(log_file, 'r', encoding='utf-8')
+        log_file.close()
+
+        if len(logfile) > 0:
+            log_data = logfile[len(logfile) - 1]
+            model.load_weights(log_data['file_name'])
+            print(f'load ')
+
+            model.fit(
+                train_generator.forfit(),
+                steps_per_epoch=len(train_generator),
+                validation_data=valid_generator.forfit(),
+                validation_steps=len(valid_generator),
+                epochs=epochs,
+                callbacks=[evaluator, tf_callbacks]
+            )
+
+    except Exception as e:
+        time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        model.save_weights(f'./save_model/train_exception_{time}_model.weights')  # 保存模型
+        print(f'excepyion = {e.args}')
+
+    finally:
+        print(f'end time = {datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}')
 
 else:
 

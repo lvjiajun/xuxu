@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/old_data/train text" />
+      <excludeFolder url="file://$MODULE_DIR$/old_data/train text_1" />
+      <excludeFolder url="file://$MODULE_DIR$/old_data/valid text" />
+      <excludeFolder url="file://$MODULE_DIR$/old_data/valid text_1" />
+      <excludeFolder url="file://$MODULE_DIR$/Generate_data/data/modify/pan12-detailed-comparison-test-corpus-2012-08-12" />
+      <excludeFolder url="file://$MODULE_DIR$/Generate_data/data/pan12-detailed-comparison-test-corpus-2012-08-12" />
+      <excludeFolder url="file://$MODULE_DIR$/Generate_data/data/pan12-detailed-comparison-test-corpus-2012-08-12_03_artificial_low_mt5" />
+      <excludeFolder url="file://$MODULE_DIR$/Generate_data/data/pan12-text-alignment-training-corpus-2012-03-16" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
