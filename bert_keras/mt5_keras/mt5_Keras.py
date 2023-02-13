@@ -7,7 +7,8 @@
 from __future__ import print_function
 import json
 import sys
-
+import os
+os.environ['TF_KERAS'] = '1'
 import numpy as np
 from tqdm import tqdm
 from bert4keras.backend import keras, K
@@ -22,29 +23,43 @@ from rouge import Rouge  # pip install rouge
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 
 import tensorflow as tf
-import datetime
-
 tf.compat.v1.experimental.output_all_intermediates(True)
+import datetime
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 
 # 数据集类型
 dirs_name: str = 'pan12-text-alignment-training-corpus-2012-03-16'
 type_name: str = '05_translation'
-json_name: str = f'../Generate_data/data/{dirs_name}_{type_name}_match'
 logfile: list = list()
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # 基本参数
-max_c_len = 256
-max_t_len = 32
-batch_size = 16
-epochs = 40
-
+max_c_len = 64
+max_t_len = 64
+batch_size = 8
+epochs = 20
+try:
+    config_file = open('confif.json','r',encoding='utf-8')
+    config_hp = json.load(config_file)
+    config_file.close()
+    dirs_name = str(config_hp['dirs_name'])
+    type_name = str(config_hp['type_name'])
+    max_c_len = int(config_hp['maxlen_c'])
+    max_t_len = int(config_hp['maxlen_t'])
+    batch_size = int(config_hp['batch_size'])
+    epochs = int(config_hp['epochs'])
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(config_hp['gpu'])
+except Exception as e:
+    print(f'not find config !\n{e.args}\n')
 # 模型路径
-config_path = '/root/kg/bert/mt5/mt5_base/mt5_base_config.json'
-checkpoint_path = '/root/kg/bert/mt5/mt5_base/model.ckpt-1000000'
-spm_path = '/root/kg/bert/mt5/sentencepiece_cn.model'
-keep_tokens_path = '/root/kg/bert/mt5/sentencepiece_cn_keep_tokens.json'
+config_path = './model/mt5_base_config.json'
+checkpoint_path = './model/mt5_base/model.ckpt-1000000'
+spm_path = './model/sentencepiece_cn.model'
+keep_tokens_path = './model/sentencepiece_cn_keep_tokens.json'
 
-
+json_name: str = f'../../Generate_data/data/{dirs_name}_{type_name}_match_'
+project_name = f'project_{dirs_name}_{type_name}'
 # 用于将控制台所有输出保存至文件，需放在代码最上面
 class Logger(object):
     def __init__(self, filename='default.log', stream=sys.stdout):
@@ -157,39 +172,45 @@ class Evaluator(keras.callbacks.Callback):
         self.smooth = SmoothingFunction().method1
         self.best_bleu = 0.
         self.lowest = 1e10
+        self.epoch = 0
 
     def on_epoch_end(self, epoch, logs=None):
+        self.epoch += 1
 
         time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         val_loss = logs['val_loss']
         logs_tmep = logs['loss']
-        file_name = f'_time_{time}_loss_{logs_tmep}_epoch_{str(epoch)}_valloss_{val_loss}_'
+        file_name = f'_{project_name}_time_{time}_loss_{logs_tmep}_epoch_{str(self.epoch)}_valloss_{val_loss}_'
 
-        condition_loss = (int(epoch)) / 2 == 1
-        if condition_loss:
+        condition_epoch = (self.epoch) % 2 == 1
+
+        if condition_epoch:
             metrics = self.evaluate(valid_data)  # 评测模型
             file_obj = open(f'./vallog/{file_name}val.json', 'w', encoding='utf-8')
             json.dump(metrics, file_obj, indent=2)
             file_obj.close()
             condition_blue = metrics['bleu'] > self.best_bleu
-
-            metrics['best_bleu'] = self.best_bleu
+            del metrics['pred']
             print('valid_data:', metrics)
+            if condition_blue:
+                self.best_bleu = metrics['bleu']
 
         condition_loss = logs['loss'] < self.lowest
         if condition_loss:
-            self.best_bleu = metrics['bleu']
             self.lowest = logs['loss']
             model.save_weights(f'./save_model/train_model{file_name}model.weights')  # 保存模型
+            print(f'save model path :{file_name}')
 
-        self.logfile.append({'epoch': epoch,
+        global  logfile
+        logfile.append({'epoch': self.epoch,
                              'loss': logs_tmep,
                              'val_loss': val_loss,
                              'time': time,
                              'file_name': f'train_model{file_name}model.weights'})
 
-        _file = open('mt_keras.json')
-        json.dump(logfile, _file)
+
+        _file = open(f'{project_name}_train_log.json','w',encoding='utf-8')
+        json.dump(logfile, _file,indent=2)
         _file.close()
 
     def evaluate(self, data, topk=1):
@@ -243,32 +264,37 @@ if __name__ == '__main__':
     tf_callbacks = tf.keras.callbacks.TensorBoard(log_dir='./logs')
 
     try:
-        log_file = open('mt_keras.json')
-        logfile = json.load(log_file, 'r', encoding='utf-8')
+        log_file = open(f'{project_name}_train_log.json','r',encoding='utf-8')
+        logfile = json.load(log_file)
         log_file.close()
-
+    except Exception as  e:
+        print(f'null log file! {e.args}')
+    try:
         if len(logfile) > 0:
             log_data = logfile[len(logfile) - 1]
-            model.load_weights(log_data['file_name'])
-            print(f'load ')
+            file_name = log_data['file_name']
+            file_name = f'./save_model/{file_name}'
+            model.load_weights(file_name)
+            print(f'load {file_name}')
+    except Exception as e:
+        print(f'no find mode file {logfile[len(logfile) - 1]}')
 
-            model.fit(
-                train_generator.forfit(),
-                steps_per_epoch=len(train_generator),
-                validation_data=valid_generator.forfit(),
-                validation_steps=len(valid_generator),
-                epochs=epochs,
-                callbacks=[evaluator, tf_callbacks]
-            )
-
+    try:
+        model.fit(
+            train_generator.forfit(),
+            steps_per_epoch=len(train_generator),
+            validation_data=valid_generator.forfit(),
+            validation_steps=len(valid_generator),
+            epochs=epochs,
+            callbacks=[evaluator, tf_callbacks]
+        )
     except Exception as e:
         time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         model.save_weights(f'./save_model/train_exception_{time}_model.weights')  # 保存模型
-        print(f'excepyion = {e.args}')
+        print(f'excepyion = {e.with_traceback()}')
 
     finally:
         print(f'end time = {datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}')
-
 else:
 
     model.load_weights('./best_model.weights')
