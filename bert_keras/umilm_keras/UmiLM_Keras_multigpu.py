@@ -300,6 +300,4 @@ if __name__ == '__main__':
 
     finally:
         print(f'end time = {datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}')
-else:
 
-    model.load_weights('./best_model.weights')

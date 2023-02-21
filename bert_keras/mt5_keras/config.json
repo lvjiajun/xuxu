@@ -1,0 +1,9 @@
+{
+  "dirs_name": "pan12-text-alignment-training-corpus-2012-03-16",
+  "type_name": "05_translation",
+  "maxlen_c": 256,
+  "maxlen_t": 256,
+  "batch_size": 6,
+  "epochs": 20,
+  "gpu": "0"
+}

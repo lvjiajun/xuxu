@@ -1,0 +1,6 @@
+{
+  "test_name": "pan12-detailed-comparison-test-corpus-2012-08-12",
+  "type_name": "05_translation",
+  "model_name": "mt5_keras",
+  "model_file": "best_model.weights"
+}

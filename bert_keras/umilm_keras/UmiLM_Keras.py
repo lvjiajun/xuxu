@@ -8,6 +8,7 @@ from __future__ import print_function
 import glob
 import sys
 import os
+
 os.environ['TF_KERAS'] = '1'
 import numpy as np
 from bert4keras.backend import keras, K
@@ -38,7 +39,7 @@ batch_size = 16
 steps_per_epoch = 1000
 epochs = 20
 try:
-    config_file = open('confif.json','r',encoding='utf-8')
+    config_file = open('confif.json', 'r', encoding='utf-8')
     config_hp = json.load(config_file)
     config_file.close()
     dirs_name = str(config_hp['dirs_name'])
@@ -50,7 +51,6 @@ try:
     os.environ["CUDA_VISIBLE_DEVICES"] = str(config_hp['gpu'])
 except Exception as e:
     print(f'not find config !\n{e.args}\n')
-
 
 json_name: str = f'../../Generate_data/data/{dirs_name}_{type_name}_match_'
 project_name = f'project_{dirs_name}_{type_name}'
@@ -163,7 +163,6 @@ class AutoTitle(AutoRegressiveDecoder):
 
 autotitle = AutoTitle(start_id=None, end_id=tokenizer._token_end_id, maxlen=32)
 
-
 class Evaluator(keras.callbacks.Callback):
     """评估与保存
     """
@@ -202,15 +201,15 @@ class Evaluator(keras.callbacks.Callback):
             model.save_weights(f'./save_model/train_model{file_name}model.weights')  # 保存模型
             print(f'save model path :{file_name}')
 
-        global  logfile
+        global logfile
         logfile.append({'epoch': self.epoch,
-                             'loss': logs_tmep,
-                             'val_loss': val_loss,
-                             'time': time,
-                             'file_name': f'train_model{file_name}model.weights'})
+                        'loss': logs_tmep,
+                        'val_loss': val_loss,
+                        'time': time,
+                        'file_name': f'train_model{file_name}model.weights'})
 
-        _file = open(f'{project_name}_train_log.json','w',encoding='utf-8')
-        json.dump(logfile, _file,indent=2)
+        _file = open(f'{project_name}_train_log.json', 'w', encoding='utf-8')
+        json.dump(logfile, _file, indent=2)
         _file.close()
 
     def evaluate(self, data, topk=1):
@@ -264,10 +263,10 @@ if __name__ == '__main__':
     tf_callbacks = tf.keras.callbacks.TensorBoard(log_dir='./logs')
 
     try:
-        log_file = open(f'{project_name}_train_log.json','r',encoding='utf-8')
+        log_file = open(f'{project_name}_train_log.json', 'r', encoding='utf-8')
         logfile = json.load(log_file)
         log_file.close()
-    except Exception as  e:
+    except Exception as e:
         print(f'null log file! {e.args}')
     try:
         if len(logfile) > 0:
@@ -295,6 +294,3 @@ if __name__ == '__main__':
 
     finally:
         print(f'end time = {datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}')
-else:
-
-    model.load_weights('./best_model.weights')

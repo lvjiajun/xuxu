@@ -57,8 +57,8 @@ def filewrite(filepath, dict_data):
                 # 修改txt文件
                 src_gen = ''.join(dict_data[i]['src_gen'])
                 tgt_gen = ''.join(dict_data[i]['tgt_gen'])
-                # text1 = text1[:int(this_offset)] + src_gen + text1[int(this_offset)
-                #                                                    + int(this_length):]
+                text1 = text1[:int(this_offset)] + src_gen + text1[int(this_offset)
+                                                                   + int(this_length):]
 
                 # 修改xml文件
                 names[i].setAttribute("this_length", str(len(src_gen)))
@@ -70,9 +70,9 @@ def filewrite(filepath, dict_data):
     susp.write(text1)
     susp.close()
 
-    fp = open(f'./data/modify/{test_name}/{type_}/{filepath}', 'w', encoding='utf-8')
-    writexml(dom, fp, indent='', newl='', addindent='', encoding='utf-8', myself=1)
-    fp.close()
+    # fp = open(f'./data/modify/{test_name}/{type_}/{filepath}', 'w', encoding='utf-8')
+    # writexml(dom, fp, indent='', newl='', addindent='', encoding='utf-8', myself=1)
+    # fp.close()
 
 
 def _fix_data(text: dict):
