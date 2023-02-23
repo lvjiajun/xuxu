@@ -39,7 +39,7 @@ batch_size = 64
 steps_per_epoch = 1000
 epochs = 10000
 try:
-    config_file = open('confif.json','r',encoding='utf-8')
+    config_file = open('confif.json', 'r', encoding='utf-8')
     config_hp = json.load(config_file)
     config_file.close()
     dirs_name = str(config_hp['dirs_name'])
@@ -58,6 +58,7 @@ config_path = '/root/kg/bert/chinese_wwm_L-12_H-768_A-12/bert_config.json'
 checkpoint_path = '/root/kg/bert/chinese_wwm_L-12_H-768_A-12/bert_model.ckpt'
 dict_path = '/root/kg/bert/chinese_wwm_L-12_H-768_A-12/vocab.txt'
 
+
 # 用于将控制台所有输出保存至文件，需放在代码最上面
 class Logger(object):
     def __init__(self, filename='default.log', stream=sys.stdout):
@@ -73,6 +74,7 @@ class Logger(object):
 
 
 sys.stdout = Logger(stream=sys.stdout)
+
 
 def load_data(filename):
     """加载数据
@@ -200,16 +202,15 @@ class Evaluator(keras.callbacks.Callback):
             model.save_weights(f'./save_model/train_model{file_name}model.weights')  # 保存模型
             print(f'save model path :{file_name}')
 
-        global  logfile
+        global logfile
         logfile.append({'epoch': self.epoch,
-                             'loss': logs_tmep,
-                             'val_loss': val_loss,
-                             'time': time,
-                             'file_name': f'train_model{file_name}model.weights'})
+                        'loss': logs_tmep,
+                        'val_loss': val_loss,
+                        'time': time,
+                        'file_name': f'train_model{file_name}model.weights'})
 
-
-        _file = open(f'{project_name}_train_log.json','w',encoding='utf-8')
-        json.dump(logfile, _file,indent=2)
+        _file = open(f'{project_name}_train_log.json', 'w', encoding='utf-8')
+        json.dump(logfile, _file, indent=2)
         _file.close()
 
     def evaluate(self, data, topk=1):
@@ -269,7 +270,7 @@ if __name__ == '__main__':
     )  # 数据要转为tf.data.Dataset格式，names跟输入层的名字对应
 
     try:
-        log_file = open(f'{project_name}_train_log.json','r',encoding='utf-8')
+        log_file = open(f'{project_name}_train_log.json', 'r', encoding='utf-8')
         logfile = json.load(log_file)
         log_file.close()
     except Exception as e:
@@ -300,4 +301,3 @@ if __name__ == '__main__':
 
     finally:
         print(f'end time = {datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}')
-

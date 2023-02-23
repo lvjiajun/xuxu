@@ -27,13 +27,10 @@ if __name__ == '__main__':
         pass
 
     if model_name == "mt5_keras":
-        from mt5_keras.mt5_Keras import model, AutoTitle, tokenizer, max_t_len
-
-        _pred = AutoTitle(start_id=None, end_id=tokenizer._token_end_id, maxlen=max_t_len - 1)
+        from mt5_keras.mt5_Keras import model, autotitle
     elif model_name == 'umilm_keras':
-        from umilm_keras.UmiLM_Keras import model, AutoTitle, tokenizer, maxlen
+        from umilm_keras.UmiLM_Keras import model, autotitle
 
-        _pred = AutoTitle(start_id=None, end_id=tokenizer._token_end_id, maxlen=maxlen - 1)
     else:
         print('err model_name please chick you config.json')
 
@@ -75,10 +72,10 @@ if __name__ == '__main__':
                     src_infer_list = list()
                     tgt_infer_list = list()
                     for src_text in cluster['src_s']:
-                        src_infer_list.append(_pred.generate(src_text, topk=1))
+                        src_infer_list.append(autotitle.generate(src_text, topk=1))
 
                     for tgt_text in cluster['tgt_s']:
-                        tgt_infer_list.append(_pred.generate(tgt_text, topk=1))
+                        tgt_infer_list.append(autotitle.generate(tgt_text, topk=1))
 
                     # 添加数据
                     cluster['src_gen'] = src_infer_list
