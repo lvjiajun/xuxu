@@ -1,0 +1,7 @@
+POST https://api.openai.com/v1/chat/completions
+Content-Type: application/json
+Authorization: Bearer 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
+{
+ "model": "gpt-3.5-turbo",
+ "messages": [{"role": "user", "content": "What is the OpenAI mission?"}]
+}

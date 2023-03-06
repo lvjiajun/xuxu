@@ -12,7 +12,7 @@ from tqdm import tqdm
 import greedy_matching
 
 test_name = 'pan12-detailed-comparison-test-corpus-2012-08-12'
-type_ = '03_artificial_low'
+type_ = '04_artificial_high'
 type_data = 'mt5'
 
 
@@ -56,7 +56,8 @@ def filewrite(filepath, dict_data):
             if md1 == md2:
                 # 修改txt文件
                 src_gen = ''.join(dict_data[i]['src_gen'])
-                tgt_gen = ''.join(dict_data[i]['tgt_gen'])
+
+                # tgt_gen = ''.join(dict_data[i]['tgt_gen'])
                 text1 = text1[:int(this_offset)] + src_gen + text1[int(this_offset)
                                                                    + int(this_length):]
 
@@ -102,18 +103,22 @@ def _sent_tokenize(text_data: dict):
 
 
 if __name__ == '__main__':
-    dir_str = f'./data/{test_name}_{type_}_{type_data}/'
-    dir_gen = os.listdir(dir_str)
-    sent_data = dict()
-    for line in tqdm(dir_gen):
-        _file = open(dir_str + line, 'r', encoding='utf-8')
-        _data = json.load(_file)
-        _file.close()
-        sent_data[_data[0]['name']] = _data
+    # dir_str = f'./data/{test_name}_{type_}_{type_data}/'
+    # dir_gen = os.listdir(dir_str)
+    # sent_data = dict()
+    # for line in tqdm(dir_gen):
+    #     _file = open(dir_str + line, 'r', encoding='utf-8')
+    #     _data = json.load(_file)
+    #     _file.close()
+    #     sent_data[_data[0]['name']] = _data
+    s = open("./pan12-detailed-comparison-test-corpus-2012-08-12_04_artificial_high_token.json", 'r', encoding='utf-8')
+    sent_data = json.load(s)
+    s.close()
     dir_test = os.listdir(f'./data/{test_name}/{type_}')
     for line in tqdm(dir_test[1:]):
-        rec = filewrite(line, sent_data[line])
+        if line[-3:] == 'xml':
+            rec = filewrite(line, sent_data[line])
 
-    file_ = open(f'./data/{test_name}_fix.json', 'w', encoding='utf-8')
-    json.dump(sent_data, file_, indent=2)
-    file_.close()
+    # file_ = open(f'./data/{test_name}_fix.json', 'w', encoding='utf-8')
+    # json.dump(sent_data, file_, indent=2)
+    # file_.close()

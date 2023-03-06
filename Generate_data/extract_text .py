@@ -16,7 +16,7 @@ dir_name: str = 'pan12-text-alignment-training-corpus-2012-03-16'
 # 测试数据集
 test_name: str = 'pan12-detailed-comparison-test-corpus-2012-08-12'
 # 数据集类型
-type_name: str = '04_artificial_high'
+type_name: str = '03_artificial_low'
 D_data = list()
 L_data = dict()
 
@@ -55,8 +55,8 @@ def filewrite(filepath: str, dirs_name: str) -> list:
             text2 = text2[int(source_offset): int(source_offset + source_length)]
             temp_list.append({'name': filepath,
                               'num': i,
-                              'src': text1_temp,
-                              'tgt': text2,
+                              'src': text2,
+                              'tgt': text1_temp,
                               'this_offset': this_offset,
                               'this_length': this_length,
                               'source_offset': source_offset,

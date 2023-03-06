@@ -6,6 +6,16 @@
         <language minSize="174" name="Python" />
       </Languages>
     </inspection_tool>
+    <inspection_tool class="IncorrectHttpHeaderInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="customHeaders">
+        <set>
+          <option value=" &quot;messages&quot;" />
+          <option value=" &quot;model&quot;" />
+          <option value="{" />
+          <option value="}" />
+        </set>
+      </option>
+    </inspection_tool>
     <inspection_tool class="PyPep8NamingInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <option name="ignoredErrors">
         <list>
