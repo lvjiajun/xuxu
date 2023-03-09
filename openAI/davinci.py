@@ -47,12 +47,13 @@ if __name__ == '__main__':
             if len(api_key) == 0:
                 print('config Missing parameter!')
             else:
-                openai.api_key = api_key[api_index]
+
                 with open(file_name, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                 for idx_num, key in enumerate(tqdm(data.keys())):
                     sent_list = data[key]
                     for idx, fix_sent in enumerate(sent_list):
+                        openai.api_key = api_key[api_index]
                         fix_data = []
                         if "src_gen" not in fix_sent:
                             for idx_, s_sent in enumerate(fix_sent['src_list']):
@@ -67,13 +68,14 @@ if __name__ == '__main__':
                             fix_sent['src_gen'] = ''.join(fix_data)
 
                             sent_list[idx] = fix_sent
+
+                            api_index += 1
+                            api_index = api_index % len(api_key)
                     data[key] = sent_list
                     if idx_num % 5 == 0:
                         with open(file_name, 'w', encoding='utf-8') as f:
                             json.dump(data, f, indent=2)
                             f.close()
-                api_index += 1
-                api_index = api_index % len(api_key)
     except Exception as e:
         print(e.args)
         with open(file_name, 'w', encoding='utf-8') as f:

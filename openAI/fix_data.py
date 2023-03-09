@@ -13,7 +13,7 @@ from nltk.tokenize import word_tokenize
 path: str = './../Generate_data/data'
 test_name: str = 'pan12-detailed-comparison-test-corpus-2012-08-12'
 dirs_name: str = 'pan12-text-alignment-training-corpus-2012-03-16'
-type_name: str = '04_artificial_high'
+type_name: str = '03_artificial_low'
 
 max_token_config = 1300
 
@@ -126,16 +126,16 @@ if __name__ == '__main__':
     Data = json.load(file)
     file.close()
 
-    # re_data = {}
-    # for sent_sp in tqdm(Data):
-    #     name = ''
-    #     for idx, sent in enumerate(sent_sp):
-    #         name = sent['name']
-    #         src = wash_data(sent['src'])
-    #         sent['src_list'] = avg_text(src)
-    #         sent_sp[idx] = sent
-    #     re_data[name] = sent_sp
-    #
-    # file = open(f'./{json_name}_token.json', 'w', encoding='utf-8')
-    # json.dump(re_data, file, indent=2)
-    # file.close()
+    re_data = {}
+    for sent_sp in tqdm(Data):
+        name = ''
+        for idx, sent in enumerate(sent_sp):
+            name = sent['name']
+            src = wash_data(sent['src'])
+            sent['src_list'] = avg_text(src)
+            sent_sp[idx] = sent
+        re_data[name] = sent_sp
+
+    file = open(f'./{json_name}_token.json', 'w', encoding='utf-8')
+    json.dump(re_data, file, indent=2)
+    file.close()

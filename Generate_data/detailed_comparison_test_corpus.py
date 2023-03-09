@@ -13,7 +13,6 @@ import greedy_matching
 
 test_name = 'pan12-detailed-comparison-test-corpus-2012-08-12'
 type_ = '04_artificial_high'
-type_data = 'mt5'
 
 
 def writexml(self, writer, indent="", addindent="", newl="", encoding=None, myself=0):
@@ -103,7 +102,7 @@ def _sent_tokenize(text_data: dict):
 
 
 if __name__ == '__main__':
-    # dir_str = f'./data/{test_name}_{type_}_{type_data}/'
+    dir_str = f'./data/run_{test_name}_{type_}_token.json'
     # dir_gen = os.listdir(dir_str)
     # sent_data = dict()
     # for line in tqdm(dir_gen):
@@ -111,9 +110,9 @@ if __name__ == '__main__':
     #     _data = json.load(_file)
     #     _file.close()
     #     sent_data[_data[0]['name']] = _data
-    s = open("./pan12-detailed-comparison-test-corpus-2012-08-12_04_artificial_high_token.json", 'r', encoding='utf-8')
-    sent_data = json.load(s)
-    s.close()
+    file = open(dir_str, 'r', encoding='utf-8')
+    sent_data = json.load(file)
+    file.close()
     dir_test = os.listdir(f'./data/{test_name}/{type_}')
     for line in tqdm(dir_test[1:]):
         if line[-3:] == 'xml':
