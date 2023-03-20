@@ -5,15 +5,18 @@
 # @File : fix_data.py
 # @Project : xuxu
 import json
-
+import jsonlines
 from tqdm import tqdm
 from nltk.tokenize import sent_tokenize
 from nltk.tokenize import word_tokenize
+from transformers import GPT2Tokenizer
+
+tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
 
 path: str = './../Generate_data/data'
 test_name: str = 'pan12-detailed-comparison-test-corpus-2012-08-12'
 dirs_name: str = 'pan12-text-alignment-training-corpus-2012-03-16'
-type_name: str = '03_artificial_low'
+type_name: str = '04_artificial_high'
 
 max_token_config = 1300
 
@@ -108,34 +111,70 @@ def wash_data(text: str, pun_data=None):
 
 if __name__ == '__main__':
 
-    json_name = f'{test_name}_{type_name}'
-    file = open(f'./{path}/{json_name}.json', 'rt', encoding='utf-8')
-    Data = json.load(file)
-    file.close()
-    for key in tqdm(list(Data.keys())):
-        for idx, data in enumerate(Data[key]):
-            src = wash_data(data['src'])
-            data['src_list'] = avg_text(src)
-            Data[key][idx] = data
-    file = open(f'./{json_name}_token.json', 'w', encoding='utf-8')
-    json.dump(Data, file, indent=2)
-    file.close()
-
+    # json_name = f'{test_name}_{type_name}'
+    # file = open(f'./{path}/{json_name}.json', 'rt', encoding='utf-8')
+    # Data = json.load(file)
+    # file.close()
+    # for key in tqdm(list(Data.keys())):
+    #     for idx, data in enumerate(Data[key]):
+    #         src = wash_data(data['src'])
+    #         data['src_list'] = avg_text(src)
+    #         Data[key][idx] = data
+    # file = open(f'./{json_name}_token.json', 'w', encoding='utf-8')
+    # json.dump(Data, file, indent=2)
+    # file.close()
+    #
+    # json_name = f'{dirs_name}_{type_name}'
+    # file = open(f'./{path}/{json_name}.json', 'rt', encoding='utf-8')
+    # Data = json.load(file)
+    # file.close()
+    #
+    # re_data = {}
+    # for sent_sp in tqdm(Data):
+    #     name = ''
+    #     for idx, sent in enumerate(sent_sp):
+    #         name = sent['name']
+    #         src = wash_data(sent['src'])
+    #         sent['src_list'] = avg_text(src)
+    #         sent_sp[idx] = sent
+    #     re_data[name] = sent_sp
+    #
+    # file = open(f'./{json_name}_token.json', 'w', encoding='utf-8')
+    # json.dump(re_data, file, indent=2)
+    # file.close()
+    #
     json_name = f'{dirs_name}_{type_name}'
     file = open(f'./{path}/{json_name}.json', 'rt', encoding='utf-8')
     Data = json.load(file)
     file.close()
 
-    re_data = {}
-    for sent_sp in tqdm(Data):
-        name = ''
-        for idx, sent in enumerate(sent_sp):
-            name = sent['name']
-            src = wash_data(sent['src'])
-            sent['src_list'] = avg_text(src)
-            sent_sp[idx] = sent
-        re_data[name] = sent_sp
+    save_data = []
+
+    save_train = []
+    for _index, data in enumerate(tqdm(Data)):
+        for idx, text in enumerate(data):
+            src_len = len(tokenizer(text['src'])['input_ids'])
+            tgt_len = len(tokenizer(text['tgt'])['input_ids'])
+
+            text['src_len'] = src_len
+            text['tgt_len'] = tgt_len
+            if src_len + tgt_len < 1800:
+                save_data.append(text)
+                text['src'] = text['src'][1:] + text['src'][0]
+                text['tgt'] = text['tgt'][1:] + text['tgt'][0]
+
+                save_train.append({'prompt': f'Rewrite the text:' + text['src'], 'completion': text['tgt']})
+
+            data[idx] = text
+        Data[_index] = data
 
     file = open(f'./{json_name}_token.json', 'w', encoding='utf-8')
-    json.dump(re_data, file, indent=2)
+    json.dump(save_data, file, indent=2)
     file.close()
+
+    file = open(f'./{json_name}_prompt.json', 'w', encoding='utf-8')
+    json.dump(save_train, file, indent=2)
+    file.close()
+
+    with jsonlines.open(f'./{json_name}_prompt.jsonl', mode='w') as writer:
+        writer.write_all(save_train)

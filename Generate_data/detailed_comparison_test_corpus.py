@@ -54,7 +54,13 @@ def filewrite(filepath, dict_data):
 
             if md1 == md2:
                 # 修改txt文件
+                for sis in dict_data[i]['src_list']:
+                    if sis['len'] > 2000:
+                        print(dict_data[i]['name'])
+                continue
                 src_gen = ''.join(dict_data[i]['src_gen'])
+
+
 
                 # tgt_gen = ''.join(dict_data[i]['tgt_gen'])
                 text1 = text1[:int(this_offset)] + src_gen + text1[int(this_offset)
