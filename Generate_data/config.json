@@ -1,7 +1,7 @@
 {
   "dirs_name": "pan12-text-alignment-training-corpus-2012-03-16",
   "test_name": "pan12-detailed-comparison-test-corpus-2012-08-12",
-  "type": "04_artificial_high",
+  "type": "02_no_obfuscation",
   "min_rouge": 0.4,
   "max_rouge": 1.8,
   "part_score": 0.36,

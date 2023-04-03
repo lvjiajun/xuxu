@@ -14,7 +14,7 @@
       <excludeFolder url="file://$MODULE_DIR$/Generate_data/stanford-corenlp-4.5.1/sutime" />
       <excludeFolder url="file://$MODULE_DIR$/Generate_data/stanford-corenlp-4.5.1/tokensregex" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.9" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.10 (base)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
